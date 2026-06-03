@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="auto" data-boot="loading">
+<head>
+  <meta charset="UTF-8" />
+  <title data-i18n="popup_title">Autoclean-email</title>
+    <style>
+    /* THEME SYSTEM
+       On gère 3 modes :
+       - auto  => suit le système (prefers-color-scheme)
+       - light => force clair
+       - dark  => force sombre
+
+       On applique des variables CSS différentes selon le mode effectif.
+    */
+
+    :root {
+      color-scheme: light dark;
+    }
+
+    /* Défaut clair */
+    :root,
+    [data-theme-effective="light"] {
+      --bg-page: #f5f5f5;
+      --bg-card: #ffffff;
+      --bg-footer: #f9fafb;
+
+      --text-main: #111827;
+      --text-dim: #6b7280;
+
+      --border-soft: #e5e7eb;
+      --border-strong: #9ca3af;
+
+      --sender-shadow: rgba(0,0,0,0.03);
+
+      --radius-card: 12px;
+      --radius-btn: 8px;
+
+      --btn-primary-bg: #374151;
+      --btn-primary-bg-hover: #4b5563;
+      --btn-primary-text: #ffffff;
+      --btn-primary-border: #374151;
+
+      --btn-secondary-bg: #ffffff;
+      --btn-secondary-bg-hover: #f9fafb;
+      --btn-secondary-text: #111827;
+      --btn-secondary-border: #374151;
+
+      --danger: #b91c1c;
+      --danger-bg-hover: #fff5f5;
+    }
+
+    /* Mode sombre */
+    @media (prefers-color-scheme: dark) {
+      [data-theme="auto"] {
+        --bg-page: #1f2937;
+        --bg-card: #111827;
+        --bg-footer: #1f2937;
+
+        --text-main: #f9fafb;
+        --text-dim: #9ca3af;
+
+        --border-soft: #374151;
+        --border-strong: #6b7280;
+
+        --sender-shadow: rgba(0,0,0,0.6);
+
+        --radius-card: 12px;
+        --radius-btn: 8px;
+
+        --btn-primary-bg: #4b5563;
+        --btn-primary-bg-hover: #6b7280;
+        --btn-primary-text: #f9fafb;
+        --btn-primary-border: #6b7280;
+
+        --btn-secondary-bg: #1f2937;
+        --btn-secondary-bg-hover: #374151;
+        --btn-secondary-text: #f9fafb;
+        --btn-secondary-border: #6b7280;
+
+        --danger: #ef4444;
+        --danger-bg-hover: rgba(239,68,68,0.1);
+      }
+    }
+
+    /* Force clair */
+    [data-theme="light"][data-theme-effective="light"] {
+      --bg-page: #f5f5f5;
+      --bg-card: #ffffff;
+      --bg-footer: #f9fafb;
+
+      --text-main: #111827;
+      --text-dim: #6b7280;
+
+      --border-soft: #e5e7eb;
+      --border-strong: #9ca3af;
+
+      --sender-shadow: rgba(0,0,0,0.03);
+
+      --radius-card: 12px;
+      --radius-btn: 8px;
+
+      --btn-primary-bg: #374151;
+      --btn-primary-bg-hover: #4b5563;
+      --btn-primary-text: #ffffff;
+      --btn-primary-border: #374151;
+
+      --btn-secondary-bg: #ffffff;
+      --btn-secondary-bg-hover: #f9fafb;
+      --btn-secondary-text: #111827;
+      --btn-secondary-border: #374151;
+
+      --danger: #b91c1c;
+      --danger-bg-hover: #fff5f5;
+    }
+
+    /* Force sombre */
+    [data-theme="dark"][data-theme-effective="dark"] {
+      --bg-page: #1f2937;
+      --bg-card: #111827;
+      --bg-footer: #1f2937;
+
+      --text-main: #f9fafb;
+      --text-dim: #9ca3af;
+
+      --border-soft: #374151;
+      --border-strong: #6b7280;
+
+      --sender-shadow: rgba(0,0,0,0.6);
+
+      --radius-card: 12px;
+      --radius-btn: 8px;
+
+      --btn-primary-bg: #4b5563;
+      --btn-primary-bg-hover: #6b7280;
+      --btn-primary-text: #f9fafb;
+      --btn-primary-border: #6b7280;
+
+      --btn-secondary-bg: #1f2937;
+      --btn-secondary-bg-hover: #374151;
+      --btn-secondary-text: #f9fafb;
+      --btn-secondary-border: #6b7280;
+
+      --danger: #ef4444;
+      --danger-bg-hover: rgba(239,68,68,0.1);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      font-size: 14px;
+      color: var(--text-main);
+      background: var(--bg-page);
+      margin: 0;
+
+      min-width: 500px;
+      max-width: 500px;
+      min-height: 400px;
+      max-height: 585px;
+
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* HEADER */
+.header {
+  padding: 12px 25px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  box-shadow: 0 2px 4px var(--sender-shadow);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center; /* centre verticalement logo / titre / engrenage */
+justify-content: space-between;
+  position: relative;
+  gap: 8px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-left a {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.header-logo {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  filter: brightness(1); /* reste visible en clair */
+}
+
+[data-theme-effective="dark"] .header-logo {
+  filter: brightness(1.4); /* un poil plus clair sur fond sombre */
+}
+
+
+.header-title-wrap {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-version {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1;
+  margin-top: 2px;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+    /* bouton réglages thème en haut à droite */
+.settings-button {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+
+  font-size: 12px;
+  line-height: 1;
+  color: var(--text-main);
+
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+}
+
+
+
+.settings-button:hover {
+  background: var(--btn-secondary-bg-hover);
+}
+
+.settings-button svg {
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  stroke: var(--text-main);
+}
+
+    /* petit menu thème */
+    .settings-menu {
+      position: absolute;
+      right: 20px;
+      top: 42px;
+      min-width: 220px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-btn);
+      box-shadow: 0 6px 16px var(--sender-shadow);
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--text-main);
+      display: none;
+      z-index: 9999;
+    }
+
+    .settings-menu h3 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      line-height: 1.2;
+      color: var(--text-main);
+      padding: 6px;
+      border-radius: var(--radius-btn);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .theme-option:hover {
+      background: var(--btn-secondary-bg-hover);
+    }
+
+    .theme-option.is-active {
+      background: var(--btn-secondary-bg-hover);
+      border-color: var(--btn-secondary-border);
+    }
+
+    .theme-bullet {
+      font-size: 10px;
+      opacity: 0.6;
+    }
+
+    .settings-section {
+      margin-top: 8px;
+    }
+
+    .settings-section + .settings-section {
+      padding-top: 8px;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .settings-menu-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .settings-menu-btn {
+      font-size: 12px;
+      line-height: 1.2;
+      cursor: pointer;
+      border-radius: var(--radius-btn);
+      border: 1px solid var(--btn-secondary-border);
+      background: var(--btn-secondary-bg);
+      color: var(--btn-secondary-text);
+      padding: 6px 8px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .settings-menu-btn:hover {
+      background: var(--btn-secondary-bg-hover);
+    }
+
+    .settings-menu-btn.danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .settings-menu-btn.danger:hover {
+      background: var(--danger-bg-hover);
+    }
+
+
+    /* =============================
+       Réglages (design compact - TEST2)
+       ============================= */
+    .settings-menu.settings-menu--compact {
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      min-width: 360px;
+      max-width: 420px;
+    }
+
+    .settings-menu--compact .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 6px 16px var(--sender-shadow);
+    }
+
+    .settings-menu--compact h1 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .settings-menu--compact .section-title {
+      margin: 12px 0 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .settings-menu--compact .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      background: var(--btn-secondary-bg-hover);
+      margin-bottom: 8px;
+    }
+
+    .settings-menu--compact .row .txt b {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .settings-menu--compact .row .txt span {
+      display: block;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 2px;
+      line-height: 1.25;
+    }
+
+    .settings-menu--compact input[type="number"] {
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      color: var(--text-main);
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 13px;
+      outline: none;
+      width: 100%;
+    }
+
+    .settings-menu--compact input[type="number"]:focus {
+      border-color: var(--btn-primary-border);
+    }
+
+    /* thème: on garde .theme-option (pour le JS), mais on l'habille façon "select" compact */
+    .settings-menu--compact .theme-pills {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .settings-menu--compact .theme-option {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .settings-menu--compact .theme-option:hover {
+      background: var(--btn-secondary-bg);
+    }
+
+    .settings-menu--compact .theme-option.is-active {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      border-color: var(--btn-primary-border);
+    }
+
+    .settings-menu--compact .theme-bullet {
+      display: none;
+    }
+
+    /* tiny switch (TEST2) */
+    .settings-menu--compact .switch {
+      width: 44px;
+      height: 26px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .settings-menu--compact .switch input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .settings-menu--compact .track {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: rgba(156, 163, 175, .22);
+      border: 1px solid var(--border-soft);
+      transition: .15s ease;
+      pointer-events: none;
+    }
+
+    .settings-menu--compact .thumb {
+      position: absolute;
+      top: 50%;
+      left: 3px;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      transition: .15s ease;
+    }
+
+    .settings-menu--compact .switch input:checked + .track {
+      background: rgba(34, 197, 94, .22);
+    }
+
+    .settings-menu--compact .switch input:checked + .track .thumb {
+      left: 21px;
+    }
+
+    /* retention inline + icône */
+    .settings-menu--compact .retention-inline {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+.settings-menu--compact .retention-inline input {
+  width: 60px; /* 60px pour les chiffres + ~15px pour les flèches */
+  text-align: left; /* Souvent mieux quand il y a des flèches à droite */
+}
+
+    .settings-menu--compact .icon-btn {
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      color: var(--text-main);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+/* Icône dans le bouton langue */
+#languageToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#languageToggleBtn .icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;   /* <- suit le thème */
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+    .settings-menu--compact .icon-btn:hover {
+      background: var(--btn-secondary-bg);
+    }
+
+    .settings-menu--compact .icon-btn:active {
+      transform: scale(.97);
+    }
+
+    /* boutons export/import/vider */
+    .settings-menu--compact .btn {
+      width: 100%;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      color: var(--text-main);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 3px;
+      text-align: center;
+    }
+
+    .settings-menu--compact .btn:hover {
+      background: var(--btn-secondary-bg);
+    }
+
+    .settings-menu--compact .btn.danger {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: var(--danger-bg-hover);
+    }
+
+
+    /* CONTENU SCROLLABLE */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px 16px;
+      position: relative;
+    }
+
+    /* LISTE EXPÉDITEURS */
+    #listWrapper {
+      margin-bottom: 12px;
+    }
+
+    #listHeaderRow {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      row-gap: 6px;
+    }
+
+    #listHeaderRow h2 {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-main);
+    }
+
+    #showMoreContainer {
+      font-size: 12px;
+      color: var(--text-dim);
+      cursor: pointer;
+      user-select: none;
+      border-radius: var(--radius-btn);
+      padding: 4px 8px;
+      line-height: 1.2;
+      border: 1px solid transparent;
+    }
+    #showMoreContainer:hover {
+      background: var(--btn-secondary-bg-hover);
+      border: 1px solid var(--border-soft);
+    }
+
+    .sender-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-card);
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px var(--sender-shadow);
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+
+    }
+
+    .sender-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+.sender-email {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-main);
+  line-height: 1.4;
+
+  /* ✅ pas de retour ligne */
+  white-space: nowrap;
+
+  /* ✅ coupe avec "…" si ça dépasse */
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  /* garantit que l’ellipsis marche bien en flex */
+  display: block;
+  width: 100%;
+}
+
+    .sender-days {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+
+    .sender-actions {
+      flex-shrink: 0;
+    }
+
+    .btn-remove {
+      font-size: 12px;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: var(--radius-btn);
+      border: 1px solid var(--danger);
+      background: transparent;
+      color: var(--danger);
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .btn-remove:hover {
+      background: var(--danger-bg-hover);
+    }
+
+    /* BLOC AJOUT */
+    #add-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-card);
+      box-shadow: 0 2px 4px var(--sender-shadow);
+      padding: 16px 16px 16px;
+      margin-bottom: 8px;
+    }
+
+    .form-field {
+      margin-bottom: 16px;
+    }
+
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      row-gap: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .form-hint-inline {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 400;
+      line-height: 1.2;
+    }
+
+    .form-hint-block {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 400;
+      line-height: 1.4;
+      margin-top: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: var(--radius-btn);
+      border: 1px solid var(--border-strong);
+      outline: none;
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      border-color: var(--btn-primary-border);
+    }
+
+    /* Bouton : ajouter des adresses email */
+    .btn-add {
+      width: 100%;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 10px 12px;
+      border-radius: var(--radius-btn);
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      border: 1px solid var(--btn-primary-border);
+      line-height: 1.2;
+    }
+
+    .btn-add:hover {
+      background: var(--btn-primary-bg-hover);
+      border-color: var(--btn-primary-bg-hover);
+    }
+
+    /* Bouton : lancer nettoyage maintenant */
+    #runCleanupBtn {
+      width: 100%;
+      background: var(--btn-secondary-bg);
+      color: var(--btn-secondary-text);
+      border: 1px solid var(--btn-secondary-border);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 10px 12px;
+      border-radius: var(--radius-btn);
+      line-height: 1.2;
+    }
+
+    #runCleanupBtn:hover {
+      background: var(--btn-secondary-bg-hover);
+    }
+
+    /* État anti-spam : bouton verrouillé pendant le délai entre deux nettoyages */
+    #runCleanupBtn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    #runCleanupBtn:disabled:hover {
+      background: var(--btn-secondary-bg);
+    }
+
+    /* FOOTER */
+    .footer {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border-soft);
+      background: var(--bg-footer);
+      box-shadow: 0 -2px 4px var(--sender-shadow);
+      padding: 12px 20px 16px;
+    }
+
+  /* zone de statut (toast léger) */
+  #status {
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-line;
+  margin-bottom: 6px;
+  color: var(--text-main);
+
+  background: var(--btn-secondary-bg-hover);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 6px 10px;
+
+  box-shadow: 0 2px 4px var(--sender-shadow);
+}
+
+/* caché = pas d'espace du tout */
+.status-hidden {
+  display: none;
+}
+
+/* visible */
+.status-visible {
+  display: block;
+}
+
+/* style loading (optionnel, mais tu l’as demandé: plus "visible") */
+.status-loading {
+  font-weight: 500;
+}
+
+    .footer-row {
+      display: flex;
+      flex-wrap: wrap;
+      row-gap: 8px;
+      column-gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+   #help {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+}
+
+#help .help-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+
+  fill: none;
+  stroke: currentColor;     /* suit le thème */
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+    #help strong {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+.settings-menu--compact .row--tight {
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.settings-menu--compact .row--two-cols {
+  grid-template-columns: 1fr 1fr;
+  column-gap: 8px;
+  row-gap: 6px;
+}
+
+/* Boutons avec icônes */
+.settings-menu--compact .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Bouton danger plus affirmé */
+.settings-menu--compact .btn--danger-strong {
+  font-weight: 600;
+}
+
+  /* ===== Anti-flicker boot gating ===== */
+  #uiRoot { display: block; }
+  #bootCover { display: none; }
+
+  html[data-boot="loading"] #uiRoot { display: none; }
+  html[data-boot="loading"] #bootCover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 585px; /* colle à tes dimensions body */
+    padding: 18px;
+    color: var(--text-dim);
+    background: var(--bg-page);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    font-size: 13px;
+  }
+
+  </style>
+</head>
+<body>
+  <div id="bootCover">Initializing…</div>
+
+  <div id="uiRoot">
+
+  <!-- HEADER -->
+<header class="header">
+<a
+  href="https://github.com/Snake-Angel/Autoclean-email"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <img src="icons/icon128.png" class="header-logo" alt="Autoclean-email GitHub" data-i18n-attr="alt:github_logo_alt" />
+</a>
+
+  <div class="header-title-wrap">
+    <h1 class="header-title" data-i18n="app_name">Autoclean Email</h1>
+    <span class="header-version" id="appVersion"></span>
+  </div>
+
+  <button class="settings-button" id="settingsBtn" aria-label="Réglages" data-i18n-attr="aria-label:settings_button_aria">
+        <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.78 1.78 0 0 0 .33 1.82l.06.06a2.15 2.15 0 1 1-3 3l-.06-.06a1.78 1.78 0 0 0-1.82-.33 1.78 1.78 0 0 0-1.11 1.64V22a2.15 2.15 0 0 1-4.3 0v-.09A1.78 1.78 0 0 0 8.4 20a1.78 1.78 0 0 0-1.82.33l-.06.06a2.15 2.15 0 1 1-3-3l.06-.06A1.78 1.78 0 0 0 4 15.4a1.78 1.78 0 0 0-1.64-1.11H2.27a2.15 2.15 0 0 1 0-4.3h.09A1.78 1.78 0 0 0 4 8.4a1.78 1.78 0 0 0-.33-1.82l-.06-.06a2.15 2.15 0 1 1 3-3l.06.06A1.78 1.78 0 0 0 8.6 4a1.78 1.78 0 0 0 1.11-1.64V2.27a2.15 2.15 0 0 1 4.3 0v.09A1.78 1.78 0 0 0 15.6 4a1.78 1.78 0 0 0 1.82-.33l.06-.06a2.15 2.15 0 1 1 3 3l-.06.06A1.78 1.78 0 0 0 20 8.6a1.78 1.78 0 0 0 1.64 1.11h.09a2.15 2.15 0 0 1 0 4.3h-.09A1.78 1.78 0 0 0 19.4 15z"></path>
+    </svg>
+  </button>
+
+  <div class="settings-menu settings-menu--compact" id="settingsMenu">
+    <div class="panel">
+      <h1 data-i18n="settings_title">Réglages</h1>
+      <div class="row">
+        <div class="txt">
+          <b data-i18n="theme_appearance_title">Apparence</b>
+          <span data-i18n="theme_appearance_desc">Système, clair ou sombre.</span>
+              </div>
+        <div class="theme-pills" role="group" aria-label="Choix du thème" data-i18n-attr="aria-label:theme_group_aria">
+                    <button type="button" class="theme-option" data-theme-choice="auto">
+            <span class="theme-bullet">•</span><span data-i18n="theme_auto">Système</span>
+                  </button>
+          <button type="button" class="theme-option" data-theme-choice="light">
+            <span class="theme-bullet">•</span><span data-i18n="theme_light">Clair</span>
+                    </button>
+          <button type="button" class="theme-option" data-theme-choice="dark">
+            <span class="theme-bullet">•</span><span data-i18n="theme_dark">Sombre</span>
+                </button>
+        </div>
+      </div>
+      <div class="row">
+  <div class="txt">
+    <b data-i18n="language_label">Langue</b>
+    <span data-i18n="language_desc">Langue de l’interface.</span>
+  </div>
+
+
+<button
+  id="languageToggleBtn"
+  class="icon-btn"
+  type="button"
+  title="Changer la langue" data-i18n-attr="title:language_change_title"
+>
+  <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+    <!-- Globe (simple, lisible) -->
+    <circle cx="12" cy="12" r="9"></circle>
+    <path d="M3 12h18"></path>
+    <path d="M12 3a12.5 12.5 0 0 1 0 18"></path>
+    <path d="M12 3a12.5 12.5 0 0 0 0 18"></path>
+  </svg>
+  <span class="lang-code">FR</span>
+</button>
+</div> 
+
+
+
+      <div class="section-title" data-i18n="deletion_section_title">Suppression</div>
+      <div class="row">
+        <div class="txt">
+          <b data-i18n="keep_summaries_title">Conserver les récapitulatifs</b>
+          <span data-i18n="keep_summaries_desc">Le script ne supprime pas les e-mails “Récapitulatif”.</span>
+        </div>
+        <label class="switch" aria-label="Conserver les récapitulatifs" data-i18n-attr="aria-label:keep_summaries_title">
+        <input id="skipSummaryCleanupToggle" type="checkbox" />
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+
+      <div class="row">
+        <div class="txt">
+          <b data-i18n="skip_unread_title">Ignorer les e-mails non lus</b>
+          <span data-i18n="skip_unread_desc">Ne supprime pas les e-mails non lus.</span>
+        </div>
+        <label class="switch" aria-label="Ignorer les e-mails non lus" data-i18n-attr="aria-label:skip_unread_title">
+          <input id="skipUnreadToggle" type="checkbox" />
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+
+      <div class="row">
+        <div class="txt">
+          <b data-i18n="label_retention_title">Durée de rétention (via un libellé)</b>
+          <span data-i18n="label_retention_desc">Durée par défaut des e-mails ajoutés via le libellé Ajout-Autoclean.</span>
+         </div>
+
+        <div class="retention-inline">
+<input
+  id="defaultLabelDaysInput"
+  type="number"
+  inputmode="numeric"
+  pattern="[0-9]*"
+  maxlength="4"
+  value="10"
+/>
+          <button id="saveDefaultLabelDaysBtn" class="icon-btn" type="button" title="Enregistrer" data-i18n-attr="title:save_title">
+              <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="section-title" data-i18n="senders_section_title">Liste des expéditeurs</div>
+  <div class="row row--tight row--two-cols">
+<button class="btn" id="exportSendersBtn" type="button">
+    <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+<polyline points="17 8 12 3 7 8"/>
+<line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
+  <span data-i18n="export_csv_btn">Exporter (CSV)</span>
+  </button>
+<button class="btn" id="importSendersBtn" type="button">
+    <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+<polyline points="7 10 12 15 17 10"/>
+<line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+  <span data-i18n="import_csv_btn">Importer (CSV)</span>
+</button>
+
+  <!-- input caché, on le laisse là -->
+  <input
+    id="importSendersInput"
+    type="file"
+    accept=".csv,text/csv"
+    style="display:none;"
+  />
+
+<button
+  class="btn danger btn--danger-strong"
+  id="clearSendersBtn"
+  type="button"
+  style="grid-column: 1 / -1;"
+>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <polyline points="3 6 5 6 21 6"/>
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    <path d="M10 11v6"/>
+    <path d="M14 11v6"/>
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+  </svg>
+  <span data-i18n="clear_senders_btn">Vider la liste</span>
+</button>
+</div>
+    </div>
+  </div>
+</header>
+
+<!-- CONTENU SCROLLABLE -->
+<main class="content">
+
+  <!-- On garde setupSection car popup.js fait setupSection.style.display (sinon crash) -->
+  <section id="setupSection" style="display:none;">
+    <div style="
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-card);
+      box-shadow: 0 2px 4px var(--sender-shadow);
+      padding: 16px;
+      margin-bottom: 12px;">
+      <div style="font-weight:600; margin-bottom:10px;">Configuration</div>
+      <div style="color: var(--text-dim);">
+        Redirection vers la page de configuration…
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPORTANT: appSection doit contenir TOUTE l'UI "normale",
+       car popup.js fait appSection.style.display = "block" quand configuré -->
+  <div id="appSection" style="display:none;">
+
+    <!-- LISTE EXPÉDITEURS -->
+    <section id="listWrapper">
+      <div id="listHeaderRow">
+        <h2 data-i18n="senders_title">Expéditeurs</h2>
+        <div id="showMoreContainer" style="display:none;"></div>
+      </div>
+
+      <div id="list"></div>
+    </section>
+
+    <!-- FORM AJOUT -->
+    <section id="add-block">
+      <div class="form-field">
+        <div class="form-label-row">
+          <span data-i18n="add_sender_email_label">Ajout email expéditeur</span>
+        </div>
+
+<input
+  type="text"
+  id="newEmail"
+  maxlength="100"
+  inputmode="email"
+  autocomplete="off"
+  autocapitalize="none"
+  spellcheck="false"
+  placeholder="ex: autoclean@gmail.com" data-i18n-attr="placeholder:new_email_placeholder"
+/>
+
+        <div class="form-hint-block">
+        </div>
+      </div>
+
+      <div class="form-field">
+        <div class="form-label-row">
+          <span data-i18n="delete_after_days_label">Supprimer après (jours)</span>
+        </div>
+<input
+  type="text"
+  id="newDays"
+  inputmode="numeric"
+  pattern="[0-9]*"
+  maxlength="4"
+  value="10"
+/>
+      </div>
+
+      <button id="addBtn" class="btn-add" data-i18n="add_sender_btn">Ajouter l'e-mail expéditeur
+      </button>
+    </section>
+
+    <button id="runCleanupBtn" data-i18n="run_cleanup_btn">Supprimer les e-mails maintenant !
+    </button>
+  </main>
+   </div>
+  <div id="status" class="status-hidden"></div>
+  <!-- FOOTER -->
+ <footer class="footer">
+  <div class="footer-row">
+    <div id="help">
+<svg class="help-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M9 18h6"/>
+  <path d="M10 22h4"/>
+  <path d="M8 14a6 6 0 1 1 8 0c-1.2 1-2 2.3-2 4H10c0-1.7-.8-3-2-4z"/>
+</svg>
+      <div>
+        <span data-i18n="help_label_prefix">Libellez un e-mail '</span><strong>Add-sender</strong><span data-i18n="help_label_suffix">' pour ajouter son expéditeur à la liste.</span>
+        </div>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="popup.js"></script>
+</body>
+</html>

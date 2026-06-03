@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Autoclean Email",
+  "version": "1.0.6",
+  "description": "Automated Gmail cleanup with sender-based retention rules and scheduled runs.",
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Autoclean-email"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://script.google.com/macros/s/*/exec",
+    "https://www.gstatic.com/generate_204",
+    "https://oauth2.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "341298656625-fr6g3nkknabms80t7k63phedjf93mq7b.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

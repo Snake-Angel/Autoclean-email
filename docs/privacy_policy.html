@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Autoclean-email – Privacy Policy / Politique de confidentialité</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.55; margin: 20px; max-width: 980px; }
+    h1 { font-size: 1.8em; margin-top: 0; }
+    h2 { font-size: 1.35em; margin-top: 1.2em; }
+    h3 { font-size: 1.1em; margin-top: 0.9em; }
+    p { margin: 0.5em 0; }
+    ul { margin: 0.4em 0 0.6em 1.2em; }
+    code { background: #f4f4f4; padding: 0 0.2em; border-radius: 3px; }
+    .lang { margin-bottom: 2.2em; padding-bottom: 1.2em; border-bottom: 1px solid #eee; }
+    .muted { color: #555; }
+    .note { background: #fffbea; border-left: 4px solid #f5c518; padding: 8px 12px; margin: 0.6em 0; }
+  </style>
+</head>
+<body>
+  <h1>Autoclean-email – Privacy Policy / Politique de confidentialité</h1>
+  <p class="muted">Last updated / Dernière mise à jour: 2026-05-25</p>
+
+  <!-- ========================= EN ========================= -->
+  <div class="lang" id="en">
+    <h2>1. Introduction</h2>
+    <p><strong>Autoclean-email</strong> is a Chrome extension that helps you manage retention rules (per sender) and trigger Gmail cleanup through a <strong>Google Apps Script Web App</strong> that <em>you deploy</em> on your own Google account.</p>
+    <p>The Chrome extension itself does <strong>not</strong> read your Gmail messages directly. It communicates only with your own Apps Script endpoint, and authenticates each request with a short-lived Google OAuth access token obtained through Chrome's Identity API.</p>
+    <p>The cleanup work (Gmail searches, label application, moving threads to trash, sending the summary email) is executed by the Apps Script you deploy in your own Google environment — using the Gmail permissions you grant during deployment.</p>
+
+    <h2>2. Data processed by the extension</h2>
+
+    <h3>2.1 Data you provide</h3>
+    <ul>
+      <li><strong>Sender email addresses</strong> you add (e.g. <code>newsletter@example.com</code>), either by typing them in the popup, importing them from a CSV file, or applying the <code>Add-sender</code> label to an email inside Gmail (see §4).</li>
+      <li><strong>Retention period</strong> (number of days, 1–999) associated with each sender.</li>
+      <li><strong>Apps Script Web App URL</strong> that you paste/configure (must be a <code>script.google.com</code> Web App URL ending with <code>/exec</code>).</li>
+    </ul>
+
+    <h3>2.2 Preferences and technical data</h3>
+    <ul>
+      <li>UI preferences: <strong>language</strong> (FR/EN) and <strong>theme</strong> (system/light/dark).</li>
+      <li>Local caches for faster display (cached sender list, cached settings).</li>
+      <li>Transient batch state used during CSV imports or multi-address add operations (job id, total, processed, ok, ko, status).</li>
+      <li>A small local technical counter (<code>ac_netfail</code>) that tracks recent network failures on a sliding window. Used internally for reliability; not transmitted anywhere.</li>
+    </ul>
+
+    <h3>2.3 Data processed by the Apps Script (in your own Google account)</h3>
+    <p>The Apps Script you deploy reads, on the fly during each cleanup run, the following Gmail data — only for threads matching your own retention rules:</p>
+    <ul>
+      <li>Sender header (<code>from</code>) of the first message of a thread (for label-based ingestion and for the summary email).</li>
+      <li>Subject and date of deleted threads (for the summary email).</li>
+    </ul>
+    <p>This data is used to build a summary email and is <strong>not</strong> persisted outside that email. The extension itself never sees this data.</p>
+
+    <h2>3. Where data is stored</h2>
+    <ul>
+      <li><strong>In Chrome storage</strong> (on your device):
+        <ul>
+          <li><code>chrome.storage.sync</code>: configured Web App URL, language choice, theme choice.</li>
+          <li><code>chrome.storage.local</code>: cached sender list, cached settings, transient batch state, network-failure counter.</li>
+        </ul>
+      </li>
+      <li><strong>In your Apps Script environment</strong> (Google), specifically the script's <code>PropertiesService</code>:
+        <ul>
+          <li><code>RETENTION_RULES_MAP</code> — your retention rules (a JSON map <code>{ email: { days } }</code>).</li>
+          <li><code>DEFAULT_LABEL_DAYS</code> — default retention applied when adding senders via the Gmail label.</li>
+          <li><code>SKIP_UNREAD</code>, <code>SKIP_SUMMARY_CLEANUP</code> — your cleanup preferences.</li>
+          <li><code>TOTAL_DELETED_EMAILS</code> — a cumulative counter incremented at each cleanup run. It is shown in the summary email and is never reset automatically.</li>
+          <li><code>LANG</code> — the language used by the summary email.</li>
+          <li><code>SUMMARY_RECIPIENT</code> — the email address that receives the summary (defaults to your own account).</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2>4. Actions performed on your Gmail account</h2>
+    <p>To perform its job, the Apps Script you deploy performs the following <strong>actions</strong> on your Gmail account:</p>
+    <ul>
+      <li>It creates and uses a Gmail label named <code>Add-sender</code>. When you apply this label to an email, the script reads the sender of the first message of that thread, adds it to your retention rules, and then <em>removes</em> the label from the thread. The email itself is not deleted by this action.</li>
+      <li>It creates and uses a Gmail label named <code>Suppression-Autoclean</code>. This label is applied to every thread the script moves to trash, so you can locate or restore the deleted threads while they remain in the trash.</li>
+      <li>It moves matching threads to the Gmail <strong>trash</strong> via <code>moveToTrash()</code> — it does not permanently delete them. Gmail purges its trash automatically after 30 days; during that window you can restore any deleted thread.</li>
+      <li>It sends a summary email to your own Google account via <code>MailApp.sendEmail</code> after each cleanup run (subject in French: <em>"Récapitulatif Autoclean-email"</em>; in English: <em>"Autoclean-email cleanup summary"</em>). This email transits through Google Mail servers but is not sent to any third party.</li>
+      <li>Unless you disable the "Keep summaries" toggle, the script also auto-cleans previous summary emails on each subsequent run, using a stable internal marker included in the summary email body, up to 10 threads per run.</li>
+      </ul>
+
+    <h2>5. Authentication (OAuth) and network requests</h2>
+    <p>The Chrome extension requests an OAuth 2.0 access token through <code>chrome.identity</code>. The only scope declared by the extension is <code>https://www.googleapis.com/auth/userinfo.email</code>. This scope does <strong>not</strong> grant access to Gmail content; the Gmail permissions are held separately by the Apps Script you deploy, under your own Google account.</p>
+    <p>The token is included in the JSON body of every request to your Apps Script Web App. The Apps Script validates each token by calling <code>https://oauth2.googleapis.com/tokeninfo</code> and checking that the token's audience matches the extension's OAuth client ID. If the token is invalid or expired, the extension removes it from the Chrome identity cache and requests a new one.</p>
+
+    <p>The extension communicates only with:</p>
+    <ul>
+      <li>your configured Apps Script Web App endpoint on <code>script.google.com</code>;</li>
+      <li>Google OAuth endpoints on <code>oauth2.googleapis.com</code> (token verification);</li>
+      <li><code>https://www.gstatic.com/generate_204</code> (Google's standard connectivity-check endpoint) used as a network probe — see paragraph below.</li>
+    </ul>
+    <p>When a call to your Apps Script Web App fails, the extension issues a short <code>GET</code> request to <code>https://www.gstatic.com/generate_204</code> to verify that real internet access is available. This endpoint returns an empty HTTP 204 response. <strong>No personal data, no authentication token, no email address and no cookies are sent in this request</strong> — only the standard request that is required to reach the URL. Its sole purpose is to distinguish a genuine network outage (so the extension can show a clear "offline" message) from an application-level error. The probe is only fired in the error path; it does not run during normal operation.</p>
+
+    <h2>6. Data sharing</h2>
+    <p>We do not operate any external servers for this extension. No personal data is sent to the developer or sold to third parties. Data is exchanged only between your browser, Google OAuth services, your own Apps Script Web App endpoint, and — when the summary email is sent — Google Mail (within your own Google account).</p>
+    <p>There is no telemetry, analytics, error reporting, or remote logging in the extension or the Apps Script code.</p>
+
+    <h2>7. Data retention and deletion</h2>
+    <ul>
+      <li>Data stored in Chrome storage remains until you remove the extension or clear browser/extension data.</li>
+      <li>The "Clear list" feature in the extension resets your retention rules in the Apps Script (<code>RETENTION_RULES_MAP</code>) and clears the local sender-list cache. It does <strong>not</strong> reset other Apps Script properties such as <code>SKIP_UNREAD</code>, <code>SKIP_SUMMARY_CLEANUP</code>, <code>DEFAULT_LABEL_DAYS</code>, <code>LANG</code>, <code>SUMMARY_RECIPIENT</code> or <code>TOTAL_DELETED_EMAILS</code>.</li>
+      <li>To fully remove the data the Apps Script holds about you, you can either delete the Apps Script project from <a href="https://script.google.com/home">script.google.com</a> or remove its <code>PropertiesService</code> values from the Apps Script editor.</li>
+      <li>The summary emails sent to your inbox remain there until you (or the auto-cleanup) delete them.</li>
+      <li>You can revoke the extension's OAuth access at any time from your <a href="https://myaccount.google.com/permissions">Google Account security settings</a>.</li>
+      <li>The Gmail labels <code>Add-sender</code> and <code>Suppression-Autoclean</code> can be deleted manually from the Gmail interface at any time.</li>
+    </ul>
+
+    <h2>8. Security</h2>
+    <ul>
+      <li>All network communications are over HTTPS.</li>
+      <li>The extension does not store the OAuth token in its own storage — it relies on Chrome's identity token cache.</li>
+      <li>The Apps Script verifies every incoming request via Google's OAuth <code>tokeninfo</code> endpoint, rejecting tokens whose audience does not match the extension.</li>
+      <li>The extension's source code is not obfuscated and can be inspected by anyone.</li>
+    </ul>
+
+    <h2>9. Contact</h2>
+    <p>For questions about this policy, contact: <strong>autoclean.email@gmail.com</strong>.</p>
+  </div>
+
+  <!-- ========================= FR ========================= -->
+  <div class="lang" id="fr">
+    <h2>1. Introduction</h2>
+    <p><strong>Autoclean-email</strong> est une extension Chrome qui vous permet de gérer des règles de rétention (par expéditeur) et de déclencher un nettoyage Gmail via une <strong>Web App Google Apps Script</strong> que <em>vous déployez</em> sur votre propre compte Google.</p>
+    <p>L'extension Chrome elle-même ne lit <strong>pas</strong> directement vos messages Gmail. Elle communique uniquement avec votre point de terminaison Apps Script, et authentifie chaque requête avec un jeton d'accès OAuth Google à courte durée de vie obtenu via l'API d'identité de Chrome.</p>
+    <p>Le travail de nettoyage (recherches Gmail, application de libellés, déplacement des conversations vers la corbeille, envoi du récapitulatif) est exécuté par le script Apps Script que vous déployez dans votre propre environnement Google, avec les permissions Gmail que vous accordez lors du déploiement.</p>
+
+    <h2>2. Données traitées par l'extension</h2>
+
+    <h3>2.1 Données que vous fournissez</h3>
+    <ul>
+      <li><strong>Adresses email d'expéditeurs</strong> que vous ajoutez (ex. <code>newsletter@exemple.com</code>), soit en les saisissant dans le popup, soit en important un fichier CSV, soit en apposant le libellé <code>Add-sender</code> sur un email dans Gmail (cf. §4).</li>
+      <li><strong>Durée de rétention</strong> (nombre de jours, 1–999) associée à chaque expéditeur.</li>
+      <li><strong>URL de la Web App Apps Script</strong> que vous collez/configurez (URL <code>script.google.com</code> se terminant par <code>/exec</code>).</li>
+    </ul>
+
+    <h3>2.2 Préférences et données techniques</h3>
+    <ul>
+      <li>Préférences d'interface : <strong>langue</strong> (FR/EN) et <strong>thème</strong> (système/clair/sombre).</li>
+      <li>Caches locaux pour accélérer l'affichage (liste des expéditeurs et paramètres en cache).</li>
+      <li>État transitoire des batchs lors des imports CSV ou ajouts multi-adresses (jobId, total, traités, succès, échecs, statut).</li>
+      <li>Un petit compteur technique local (<code>ac_netfail</code>) qui suit les échecs réseau récents sur une fenêtre glissante. Utilisé en interne pour la fiabilité ; n'est transmis nulle part.</li>
+    </ul>
+
+    <h3>2.3 Données traitées par le script Apps Script (dans votre propre compte Google)</h3>
+    <p>Le script Apps Script que vous déployez lit, à la volée pendant chaque nettoyage, les données Gmail suivantes — uniquement pour les conversations correspondant à vos propres règles de rétention :</p>
+    <ul>
+      <li>L'en-tête expéditeur (<code>from</code>) du premier message d'une conversation (pour l'ingestion via libellé et pour le récapitulatif).</li>
+      <li>Le sujet et la date des conversations supprimées (pour le récapitulatif).</li>
+    </ul>
+    <p>Ces données servent uniquement à construire l'email récapitulatif et ne sont <strong>pas</strong> conservées en dehors de cet email. L'extension elle-même ne voit jamais ces données.</p>
+
+    <h2>3. Où les données sont stockées</h2>
+    <ul>
+      <li><strong>Dans le stockage Chrome</strong> (sur votre appareil) :
+        <ul>
+          <li><code>chrome.storage.sync</code> : URL Apps Script configurée, choix de langue, choix de thème.</li>
+          <li><code>chrome.storage.local</code> : liste des expéditeurs en cache, paramètres en cache, état transitoire des batchs, compteur d'échecs réseau.</li>
+        </ul>
+      </li>
+      <li><strong>Dans votre environnement Apps Script</strong> (Google), plus précisément dans le <code>PropertiesService</code> du script :
+        <ul>
+          <li><code>RETENTION_RULES_MAP</code> — vos règles de rétention (une map JSON <code>{ email: { days } }</code>).</li>
+          <li><code>DEFAULT_LABEL_DAYS</code> — durée par défaut appliquée aux expéditeurs ajoutés via le libellé Gmail.</li>
+          <li><code>SKIP_UNREAD</code>, <code>SKIP_SUMMARY_CLEANUP</code> — vos préférences de nettoyage.</li>
+          <li><code>TOTAL_DELETED_EMAILS</code> — un compteur cumulatif incrémenté à chaque nettoyage. Il est affiché dans le récapitulatif et n'est jamais réinitialisé automatiquement.</li>
+          <li><code>LANG</code> — la langue utilisée par le récapitulatif.</li>
+          <li><code>SUMMARY_RECIPIENT</code> — l'adresse email qui reçoit le récapitulatif (par défaut votre propre compte).</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2>4. Actions effectuées sur votre compte Gmail</h2>
+    <p>Pour réaliser son rôle, le script Apps Script que vous déployez effectue les <strong>actions</strong> suivantes sur votre compte Gmail :</p>
+    <ul>
+      <li>Il crée et utilise un libellé Gmail nommé <code>Add-sender</code>. Lorsque vous apposez ce libellé sur un email, le script lit l'expéditeur du premier message de la conversation, l'ajoute à vos règles de rétention, puis <em>retire</em> le libellé de la conversation. L'email lui-même n'est pas supprimé par cette action.</li>
+      <li>Il crée et utilise un libellé Gmail nommé <code>Suppression-Autoclean</code>. Ce libellé est apposé sur chaque conversation que le script déplace vers la corbeille, ce qui vous permet de retrouver ou restaurer les conversations supprimées tant qu'elles sont encore dans la corbeille.</li>
+      <li>Il déplace les conversations correspondantes vers la <strong>corbeille</strong> Gmail via <code>moveToTrash()</code> — il ne les supprime pas définitivement. Gmail vide sa corbeille automatiquement au bout de 30 jours ; pendant cette fenêtre vous pouvez restaurer n'importe quelle conversation supprimée.</li>
+      <li>Il envoie un récapitulatif à votre propre compte Google via <code>MailApp.sendEmail</code> après chaque nettoyage (sujet en français : <em>« Récapitulatif Autoclean-email »</em> ; en anglais : <em>« Autoclean-email cleanup summary »</em>). Cet email transite par les serveurs Google Mail mais n'est envoyé à aucun tiers.</li>
+      <li>Sauf si vous désactivez le toggle « Conserver les récapitulatifs », le script supprime aussi automatiquement les anciens emails de récapitulatif lors des nettoyages suivants, grâce à un marqueur interne stable inclus dans le corps de l'email, jusqu'à 10 conversations par run.</li>
+    </ul>
+
+    <h2>5. Authentification (OAuth) et requêtes réseau</h2>
+    <p>L'extension Chrome demande un jeton d'accès OAuth 2.0 via <code>chrome.identity</code>. Le seul périmètre déclaré par l'extension est <code>https://www.googleapis.com/auth/userinfo.email</code>. Ce périmètre ne permet <strong>pas</strong> d'accéder au contenu Gmail ; les permissions Gmail sont détenues séparément par le script Apps Script que vous déployez, sous votre propre compte Google.</p>
+    <p>Le jeton est inclus dans le corps JSON de chaque requête envoyée à votre Web App Apps Script. Le script valide chaque jeton en appelant <code>https://oauth2.googleapis.com/tokeninfo</code> et en vérifiant que l'audience du jeton correspond au Client ID OAuth de l'extension. Si le jeton est invalide ou expiré, l'extension le retire du cache d'identité Chrome et en demande un nouveau.</p>
+
+    <p>L'extension communique uniquement avec :</p>
+    <ul>
+      <li>votre Web App Apps Script sur <code>script.google.com</code> ;</li>
+      <li>les endpoints OAuth de Google sur <code>oauth2.googleapis.com</code> (vérification de jeton) ;</li>
+      <li><code>https://www.gstatic.com/generate_204</code> (endpoint standard de Google pour le test de connectivité), utilisé comme sonde réseau — voir le paragraphe ci-dessous.</li>
+    </ul>
+    <p>Lorsqu'un appel à votre Web App Apps Script échoue, l'extension émet une courte requête <code>GET</code> vers <code>https://www.gstatic.com/generate_204</code> afin de vérifier qu'un accès internet réel est disponible. Cet endpoint renvoie une réponse HTTP 204 vide. <strong>Aucune donnée personnelle, aucun jeton d'authentification, aucune adresse e-mail et aucun cookie ne sont transmis dans cette requête</strong> — uniquement la requête standard nécessaire pour atteindre l'URL. Son unique but est de distinguer une vraie panne réseau (afin d'afficher un message « hors ligne » clair) d'une erreur applicative. La sonde n'est déclenchée que dans le chemin d'erreur ; elle ne s'exécute pas en fonctionnement normal.</p>
+
+    <h2>6. Partage des données</h2>
+    <p>Nous n'opérons aucun serveur externe pour cette extension. Aucune donnée personnelle n'est envoyée au développeur ni vendue à des tiers. Les échanges se font uniquement entre votre navigateur, les services OAuth de Google, votre Web App Apps Script, et — lors de l'envoi du récapitulatif — Google Mail (au sein de votre propre compte Google).</p>
+    <p>Aucune télémétrie, aucun analytics, aucune remontée d'erreurs et aucun logging à distance ne sont présents dans l'extension ni dans le script Apps Script.</p>
+
+    <h2>7. Conservation et suppression des données</h2>
+    <ul>
+      <li>Les données dans le stockage Chrome restent jusqu'à suppression de l'extension ou effacement des données du navigateur/de l'extension.</li>
+      <li>La fonctionnalité « Vider la liste » de l'extension réinitialise vos règles de rétention côté Apps Script (<code>RETENTION_RULES_MAP</code>) et vide le cache local de la liste d'expéditeurs. Elle <strong>ne réinitialise pas</strong> les autres propriétés Apps Script telles que <code>SKIP_UNREAD</code>, <code>SKIP_SUMMARY_CLEANUP</code>, <code>DEFAULT_LABEL_DAYS</code>, <code>LANG</code>, <code>SUMMARY_RECIPIENT</code> ou <code>TOTAL_DELETED_EMAILS</code>.</li>
+      <li>Pour supprimer entièrement les données détenues par le script Apps Script, vous pouvez soit supprimer le projet Apps Script depuis <a href="https://script.google.com/home">script.google.com</a>, soit retirer les valeurs <code>PropertiesService</code> depuis l'éditeur Apps Script.</li>
+      <li>Les emails de récapitulatif envoyés dans votre boîte de réception y restent jusqu'à ce que vous (ou l'auto-nettoyage) les supprimiez.</li>
+      <li>Vous pouvez révoquer l'accès OAuth de l'extension à tout moment via les <a href="https://myaccount.google.com/permissions">paramètres de sécurité de votre compte Google</a>.</li>
+      <li>Les libellés Gmail <code>Add-sender</code> et <code>Suppression-Autoclean</code> peuvent être supprimés manuellement depuis l'interface Gmail à tout moment.</li>
+    </ul>
+
+    <h2>8. Sécurité</h2>
+    <ul>
+      <li>Toutes les communications réseau passent par HTTPS.</li>
+      <li>L'extension ne stocke pas le jeton OAuth dans son propre stockage — elle s'appuie sur le cache d'identité Chrome.</li>
+      <li>Le script Apps Script vérifie chaque requête entrante via l'endpoint OAuth <code>tokeninfo</code> de Google et rejette les jetons dont l'audience ne correspond pas à l'extension.</li>
+      <li>Le code source de l'extension n'est pas obfusqué et peut être inspecté par n'importe qui.</li>
+    </ul>
+
+    <h2>9. Contact</h2>
+    <p>Pour toute question : <strong>autoclean.email@gmail.com</strong>.</p>
+  </div>
+</body>
+</html>

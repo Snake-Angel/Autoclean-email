@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+
+<html data-theme="auto" lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title data-i18n="config_page_title">Autoclean-email · Configuration</title>
+<style>
+  :root {
+    color-scheme: light dark;
+  }
+  
+  /* =========================
+     Thèmes (variables)
+     ========================= */
+  :root,
+  [data-theme-effective="light"] {
+    --bg-page: #f5f5f5;
+    --bg-card: #ffffff;
+    --bg-soft: #f9fafb;
+  
+    --text-main: #111827;
+    --text-dim: #6b7280;
+  
+    --border-soft: #e5e7eb;
+    --border-strong: #9ca3af;
+  
+    --shadow: rgba(0, 0, 0, 0.06);
+  
+    --radius-card: 16px;
+    --radius-btn: 12px;
+  
+    --btn-primary-bg: #2563eb;
+    --btn-primary-bg-hover: #2563eb;
+    --btn-primary-text: #ffffff;
+    --btn-primary-border: #374151;
+  
+    --btn-secondary-bg: #ffffff;
+    --btn-secondary-bg-hover: #f3f4f6;
+    --btn-secondary-text: #111827;
+    --btn-secondary-border: #374151;
+  
+    --focus: rgba(55, 65, 81, 0.25);
+  
+    /* Tooltip */
+    --tip-bg: #0b1220;
+    --tip-border: rgba(255, 255, 255, 0.12);
+    --tip-shadow: rgba(0, 0, 0, 0.20);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    [data-theme="auto"] {
+      --bg-page: #0b1220;
+      --bg-card: #0f172a;
+      --bg-soft: #111c33;
+  
+      --text-main: #f9fafb;
+      --text-dim: #9ca3af;
+  
+      --border-soft: #24324e;
+      --border-strong: #3b4a6b;
+  
+      --shadow: rgba(0, 0, 0, 0.45);
+  
+      --btn-primary-bg: #4b5563;
+      --btn-primary-bg-hover: #6b7280;
+      --btn-primary-text: #f9fafb;
+      --btn-primary-border: #6b7280;
+  
+      --btn-secondary-bg: #0f172a;
+      --btn-secondary-bg-hover: #111c33;
+      --btn-secondary-text: #f9fafb;
+      --btn-secondary-border: #6b7280;
+  
+      --focus: rgba(148, 163, 184, 0.25);
+  
+      --tip-bg: #0b1220;
+      --tip-border: rgba(255, 255, 255, 0.10);
+      --tip-shadow: rgba(0, 0, 0, 0.42);
+    }
+  }
+  
+  [data-theme="dark"][data-theme-effective="dark"] {
+    --bg-page: #0b1220;
+    --bg-card: #0f172a;
+    --bg-soft: #111c33;
+  
+    --text-main: #f9fafb;
+    --text-dim: #9ca3af;
+  
+    --border-soft: #24324e;
+    --border-strong: #3b4a6b;
+  
+    --shadow: rgba(0, 0, 0, 0.45);
+  
+    --btn-primary-bg: #4b5563;
+    --btn-primary-bg-hover: #6b7280;
+    --btn-primary-text: #f9fafb;
+    --btn-primary-border: #6b7280;
+  
+    --btn-secondary-bg: #0f172a;
+    --btn-secondary-bg-hover: #111c33;
+    --btn-secondary-text: #f9fafb;
+    --btn-secondary-border: #6b7280;
+  
+    --focus: rgba(148, 163, 184, 0.25);
+  
+    --tip-bg: #0b1220;
+    --tip-border: rgba(255, 255, 255, 0.10);
+    --tip-shadow: rgba(0, 0, 0, 0.42);
+  }
+  
+  /* =========================
+     Base
+     ========================= */
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-main);
+    line-height: 1.35;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  
+  a:hover {
+    opacity: 0.9;
+  }
+  
+  /* =========================
+     Layout
+     ========================= */
+  .main {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 18px;
+  }
+  
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-card);
+    padding: 16px;
+    box-shadow: 0 10px 30px var(--shadow);
+  }
+  
+  .card.soft {
+    background: var(--bg-soft);
+  }
+  
+  /* =========================
+     Topbar (non utilisée ici, conservée)
+     ========================= */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  
+  .topbar-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  
+  .logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid var(--border-soft);
+    background: var(--bg-card);
+    padding: 6px;
+    box-shadow: 0 6px 18px var(--shadow);
+  }
+  
+  .brand h1 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  /* =========================
+     Boutons
+     ========================= */
+  .btn {
+    border: 1px solid var(--btn-secondary-border);
+    background: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    border-radius: var(--radius-btn);
+    padding: 10px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.12s ease;
+    box-shadow: 0 10px 26px var(--shadow);
+    user-select: none;
+  }
+  
+  .btn:hover {
+    background: var(--btn-secondary-bg-hover);
+  }
+  
+  .btn:active {
+    transform: scale(0.985);
+  }
+  
+  .btn.primary {
+    border-color: var(--btn-primary-border);
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+  }
+  
+  .btn.primary:hover {
+    background: var(--btn-primary-bg-hover);
+    border-color: var(--btn-primary-bg-hover);
+  }
+
+  /* Bouton spécifique : Copier le code */
+#copyCodeBtn {
+  padding: 6px 10px;
+  font-size: 12px;
+  box-shadow: 0 6px 16px var(--shadow);
+}
+
+#copyCodeBtn .btnIcon,
+#copyCodeBtn .btnIcon svg {
+  width: 14px;
+  height: 14px;
+}
+  
+  .btn[disabled] {
+    opacity: 0.5;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+  }
+  
+  .btnIcon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+  }
+  
+  .btnIcon svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.25;
+    opacity: 1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .btn.subtle {
+  opacity: 0.6;
+  box-shadow: 0 4px 10px var(--shadow);
+}
+
+  /* =========================
+     Hero / Header
+     ========================= */
+  .hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 6px 14px 6px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 14px;
+  
+    /* Le bloc header devient un “contenant” pour positionner les boutons */
+    position: relative;
+    padding-right: 260px; /* réserve de place pour 2 boutons */
+  }
+  
+  .heroIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    border: 1px solid var(--border-soft);
+    background: rgba(59, 130, 246, 0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 26px var(--shadow);
+  }
+  
+  .heroIcon img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    opacity: 0.95;
+  }
+  
+  .heroTitle {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 0.15px;
+    line-height: 1.15;
+  }
+  
+  .heroSubRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  
+  .heroSub {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+  
+  .heroSubRow .heroSub {
+    margin: 6px 0 0 0;
+  }
+  
+  /* Boutons en haut à droite dans le header */
+  .themeBtnHero,
+  .langBtnHero {
+    position: absolute;
+    top: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+    box-shadow: 0 10px 26px var(--shadow);
+  }
+  
+  .themeBtnHero {
+    right: 10px;
+  }
+  
+  .langBtnHero {
+    right: 120px;
+  }
+  
+  /* Icônes un peu plus grandes */
+  .themeBtnHero .btnIcon,
+  .themeBtnHero .btnIcon svg,
+  .langBtnHero .btnIcon,
+  .langBtnHero .btnIcon svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Mobile: si ça manque de place, on réduit un poil */
+  @media (max-width: 520px) {
+    .hero {
+      padding-right: 0;
+    }
+  
+    .themeBtnHero,
+    .langBtnHero {
+      top: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+  
+    .themeBtnHero {
+      right: 8px;
+    }
+  
+    .langBtnHero {
+      right: 96px;
+    }
+  
+    .themeBtnHero span:last-child {
+      display: none;
+    }
+  }
+  
+  /* =========================
+     Étapes / contenu
+     ========================= */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 0;
+  
+    /* Compteur principal (1, 2, 3...) */
+    counter-reset: step;
+  }
+  
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+  
+    /* Incrémente le compteur de section et reset le sous-compteur */
+    counter-increment: step;
+    counter-reset: substep;
+  }
+  
+  .badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    font-size: 18px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    box-shadow: 0 6px 18px var(--shadow);
+    flex-shrink: 0;
+  }
+  
+  .stepContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .stepContent .codeViewer {
+    margin-top: 12px;
+  }
+  
+  .stepContent .row {
+    margin-top: 10px;
+  }
+  
+  .step h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+      text-decoration: underline;
+  text-decoration-thickness: 1.25px;
+  text-underline-offset: 2px;
+  }
+  
+ .step p {
+  margin: 8px 0 0 0;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.step p,
+.line {
+  margin-top: 10px;
+  line-height: 1.5;
+}
+  
+.subLine {
+  display: block;
+  margin: 0;
+  margin-left: 33px; /* ajuste si besoin */
+  font-size: 13px;
+}
+
+  /* Un seul système de numérotation, partagé entre .line et .klist li */
+  .step .line::before,
+  .step .klist li::before {
+    counter-increment: substep;
+    content: counter(step) "." counter(substep) " - ";
+      font-size: 14px;          /* force la même taille partout */
+    font-weight: 700;
+  }
+  
+  .line {
+    margin: 10px 0 0 0; /* espace entre lignes */
+    font-size: 14px;
+    color: var(--text-main);
+  }
+  
+  .klist {
+    margin: 10px 0; line-height: 1.5;
+    padding-left: 18px;
+    color: var(--text-main);
+    font-size: 14px;
+  }
+  
+  .klist li {
+    margin: 6px 0;
+  }
+  
+  /* Variante “sans puces”, conservée telle quelle */
+  .klist {
+    list-style: none;
+    padding-left: 0;
+    margin: 10px 0 0 0;
+  }
+  
+  .step .klist li {
+    margin: 8px 0;
+  }
+  
+.stepNote{
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-main);
+
+  position: relative;
+  padding-left: 24px; /* réserve la place à gauche pour l’icône */
+}
+
+.stepNoteIcon{
+  width: 20px;
+  height: 20px;
+  opacity: 0.85;
+  position: absolute;
+  left: -8px;            /* plus à gauche */
+  top: 50%;           /* au milieu vertical du bloc */
+  transform: translateY(-50%);
+}
+
+.stepNoteText{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+  /* =========================
+     Formulaires
+     ========================= */
+  .row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  
+  .field {
+    margin-top: 12px;
+  }
+  
+  input[type="text"] {
+    width: 100%;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card);
+    color: var(--text-main);
+    border-radius: 14px;
+    padding: 20px;
+    font-size: 14px;
+    outline: none;
+    box-shadow: 0 0 0 0 transparent;
+    transition: 0.12s ease;
+  }
+  
+  #execOrTokenInput {
+  padding: 8px 12px;   /* beaucoup plus compact */
+  font-size: 13px;     /* optionnel */
+  border-radius: 10px; /* si tu veux moins arrondi */
+}
+
+  
+  input:focus {
+    border-color: var(--btn-primary-border);
+    box-shadow: 0 0 0 4px var(--focus);
+  }
+  
+  .helper {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  
+  .centerRow {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+  }
+  
+  /* =========================
+     Code viewer
+     ========================= */
+  .codeViewer {
+    width: 700px;      /* largeur fixe */
+    max-width: 100%;   /* évite de casser en mobile */
+    margin-top: 10px;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    background: var(--bg-soft);
+    height: 100px;     /* taille fixe (mini) */
+    max-height: 60px; /* verrouille */
+    overflow: auto;
+    box-shadow: 0 6px 18px var(--shadow);
+  }
+  
+  #codePreview {
+    margin: 0;
+    padding: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.45;
+    white-space: pre;
+  }
+  
+  /* =========================
+     Tooltip
+     ========================= */
+  .tipWrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: baseline; /* FIX alignement avec le texte */
+  }
+  
+  /* Icone du composant tooltip (ac-tip)
+     Fix: visible en thème clair comme sombre, sans toucher au comportement JS. */
+/* Icone du composant tooltip (ac-tip) */
+ac-tip {
+  /* On utilise la couleur grise définie dans tes thèmes */
+  color: var(--text-dim); 
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+ac-tip svg {
+  /* FORCE le SVG à utiliser la couleur du parent (var(--text-dim)) */
+  stroke: currentColor !important; 
+  fill: none;
+  width: 16px; /* Ajuste la taille si besoin */
+  height: 16px;
+}
+  
+  .infoBtn {
+    color: var(--text-dim) !important;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-soft);
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: none;
+    opacity: 1;
+    transition: 0.12s ease;
+    margin-left: 4px;
+    top: 1px; /* micro-ajustement */
+    position: relative; /* pour que top marche */
+  }
+  
+  .infoBtn:hover {
+    opacity: 0.95;
+  }
+  
+  .infoBtn svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  
+  /* Empêche "mot + (i)" de se casser sur 2 lignes */
+  .nowrap {
+    white-space: nowrap;
+  }
+  
+  .tip {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translate(12px, -100%) translate(8px, -8px);
+    width: 260px;
+    max-width: min(260px, calc(100vw - 64px));
+    background: var(--tip-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 32px var(--tip-shadow);
+    padding: 0;
+    z-index: 200;
+    display: none;
+    opacity: 0.97;
+  }
+  
+  .tip::before {
+    content: "";
+    position: absolute;
+    left: -2px;
+    bottom: -2px;
+    width: 0px;
+    height: 0px;
+    background: var(--tip-bg);
+    transform: rotate(90deg);
+    border-right: 0px solid var(--tip-border);
+    border-bottom: 0px solid var(--tip-border);
+  }
+  
+  .tip img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+    border-radius: 0;
+  }
+  
+  .tipWrap:focus-within .tip,
+  .tipWrap:hover .tip {
+    display: block;
+  }
+  
+  /* Bouton thème (fallback inline, conservé) */
+  #themeToggleBtn {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  
+  #themeToggleBtn .btnIcon,
+  #themeToggleBtn .btnIcon svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Petit bouton thème inline (conservé) */
+  .btnThemeInline {
+    padding: 8px 10px;
+    font-size: 12px;
+    box-shadow: 0 6px 18px var(--shadow);
+  }
+
+</style>
+</head>
+<body>
+<main class="main">
+<section class="card">
+<!-- Header -->
+<div class="hero">
+<div class="heroIcon">
+<img alt="Logo" data-i18n-attr='{"alt":"config_logo_alt"}' onerror="this.onerror=null;this.style.display='none';" src="icons/icon48.png"/>
+</div>
+<div>
+<h2 class="heroTitle" data-i18n="config_brand_name">Autoclean-email</h2>
+<div class="heroSubRow">
+<p class="heroSub" data-i18n="config_install_guide">GUIDE D’INSTALLATION</p>
+<!-- Language toggle button (wiring in config.js) -->
+<button aria-label="Changer la langue" class="btn langBtnHero" data-i18n-attr='{"title":"language_change_title","aria-label":"language_change_title"}' id="languageToggleBtn" title="Changer la langue" type="button">
+<span aria-hidden="true" class="btnIcon">
+<svg viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="9"></circle>
+<path d="M3 12h18"></path>
+<path d="M12 3c3 3 3 15 0 18"></path>
+<path d="M12 3c-3 3-3 15 0 18"></path>
+</svg>
+</span>
+<span data-i18n="language_toggle_btn">FR/EN</span>
+</button>
+<!-- Theme toggle -->
+<button aria-label="Changer de thème" class="btn themeBtnHero" data-i18n-attr='{"aria-label":"theme_toggle_aria","title":"theme_toggle_aria"}' id="themeToggleBtn" title="Changer de thème" type="button">
+<span aria-hidden="true" class="btnIcon" id="themeToggleIcon"></span>
+<span data-i18n="theme_title" id="themeToggleLabel">Thème</span>
+</button>
+</div>
+</div>
+</div>
+<div class="steps">
+<div class="card soft">
+<div class="step" data-step="1">
+<div class="badge">1</div>
+<div style="flex:1;">
+<h3 data-i18n="step1_title">Configuration Apps Script</h3>
+<!-- Ligne 1 -->
+<p class="line">
+<span data-i18n="step1_create_project_prefix">Crée un nouveau projet :</span>
+<a href="https://script.google.com/home/projects/create" rel="noopener noreferrer" target="_blank">
+          https://script.google.com/home/projects/create
+        </a>
+</p>
+<!-- Ligne 2 -->
+<p class="line">
+<span data-i18n="step1_replace">
+          Remplace le code déjà présent dans <strong>Code.gs</strong> par celui-ci ci-dessous.
+        </span>
+<ac-tip data-alt="Deploy" data-id="Deploy"></ac-tip>
+</p>
+<!-- Ligne 3 -->
+<div class="codeViewer">
+<pre aria-label="Aperçu du code Apps Script" id="codePreview"></pre>
+</div>
+<!-- Ligne 4 -->
+<div class="row">
+<button class="btn primary" id="copyCodeBtn" type="button">
+  <span aria-hidden="true" class="btnIcon">
+<svg viewBox="0 0 24 24">
+<path d="M9 9h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z"></path>
+<path d="M7 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"></path>
+</svg>
+</span>
+<span data-i18n="copy_code_btn" id="copyCodeLabel">Copier le code</span>
+</button>
+</div>
+<!-- Ligne 5 -->
+<p class="line">
+<span data-i18n="step1_deploy_prefix">Déploie en Web app :</span>
+<span data-i18n="step1_deploy_path_1">Deploy</span>
+        →
+        <span class="nowrap">
+<span data-i18n="step1_deploy_path_2">New deployment</span>
+<ac-tip data-alt="New deployment" data-id="new-deployment"></ac-tip>
+</span>
+        →
+        <span data-i18n="step1_deploy_path_3">Web app</span>
+<ac-tip data-alt="Webapp" data-id="Webapp"></ac-tip>
+</p>
+<!-- Ligne 6 -->
+<p class="line">
+<span data-i18n="step1_settings_prefix">Réglages :</span>
+<span data-i18n="step1_settings_exec_as">Exécuter en tant que : Moi</span>
+        →
+        <span data-i18n="step1_settings_access">Qui a accès: Tout le monde</span>
+<ac-tip data-alt="access" data-id="access"></ac-tip>
+</p>
+<!-- Ligne 7 -->
+<p class="line">
+<span data-i18n="step1_permissions1">Acceptez les autorisations Google pour activer le nettoyage automatique.</span>
+<ac-tip data-alt="google" data-id="google"></ac-tip>
+<span class="subLine" data-i18n="step1_permissions2">
+  Le script s’exécute uniquement sur votre compte
+</span>
+</p>
+</div>
+</div>
+</div>
+<!-- STEP 2 -->
+<div class="card soft">
+<div class="step" data-step="2">
+<div class="badge">2</div>
+<div style="flex:1;">
+<h3 data-i18n="step2_title">Automatisations (déclencheurs)</h3>
+<ul class="klist">
+<li>
+<span data-i18n="step2_list_item_1_prefix">Sélectionne le bouton déclencheur sur la barre de gauche</span>
+<ac-tip data-alt="déclencheur" data-id="declencheur"></ac-tip>
+</li>
+<li>
+<span data-i18n="step2_list_item_2_prefix">Clique sur le bouton ajouter un déclencheur</span>
+<ac-tip data-alt="Aide : déclencheurs" data-id="declencheurs"></ac-tip>
+</li>
+<li>
+<span data-i18n="step2_list_item_3_prefix">Choisis "fonction à exécuter" -&gt; scheduledCleanup()</span>
+<ac-tip data-alt="scheduledCleanup" data-id="scheduledCleanup"></ac-tip>
+</li>
+<li>
+<span data-i18n="step2_list_item_4_prefix">Choisissez vos conditions de déclenchement (modifiable à tout moment).</span>
+<ac-tip data-alt="conditions" data-id="conditions"></ac-tip>
+</li>
+<li>
+<span data-i18n="step2_list_item_5_prefix">Enregistrer</span>
+<ac-tip data-alt="Enregistrer" data-id="Enregistrer"></ac-tip>
+</li>
+</ul>
+
+<!-- PS (version aérée sans encadré) -->
+<div class="stepNote">
+  <svg class="stepNoteIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M12 3 1.8 20.2c-.4.7.1 1.6.9 1.6h18.6c.8 0 1.3-.9.9-1.6L12 3z"
+          fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M12 9v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="17" r="1.2" fill="currentColor"/>
+  </svg>
+
+  <div class="stepNoteText">
+    <div data-i18n="step2_ps">
+      Vous pouvez retrouver vos automatisations sur
+      <a href="https://script.google.com/home/triggers" target="_blank" rel="noopener noreferrer">
+        https://script.google.com/home/triggers
+      </a>
+    </div>
+
+    <div data-i18n="step2_cleanup_info">
+      Chaque nettoyage envoie un email récapitulatif et libelle les emails supprimés.
+    </div>
+  </div>
+</div>
+
+</div> <!-- fin du div style="flex:1;" -->
+</div> <!-- fin .step (data-step="2") -->
+</div> <!-- fin .card.soft (STEP 2) -->
+<!-- STEP 3 -->
+<div class="card soft">
+<div class="step" data-step="3">
+<div class="badge">3</div>
+<div style="flex:1;">
+<h3 data-i18n="step3_title">Connexion de l’extension</h3>
+<ul class="klist">
+<li>
+<span data-i18n="step3_list_item_1_prefix">Sélectionne la fonction</span>
+<span class="nowrap">
+                    setup
+<ac-tip data-alt="Aide : setup" data-id="setup"></ac-tip>
+</span>
+<span data-i18n="step3_list_item_1_suffix">puis clique sur</span>
+<span data-i18n="step3_run">Exécuter</span>.
+                   <ac-tip data-alt="Exécuter" data-id="executer"></ac-tip>
+</li>
+<li>
+<span data-i18n="step3_list_item_3">Copie l’URL affichée dans les logs</span>
+<ac-tip data-alt="Aide : logs" data-id="logs"></ac-tip>
+</li>
+</ul>
+<div class="field">
+<label data-i18n="webapp_url_label" for="execOrTokenInput">Web App URL</label>
+<input autocomplete="off"
+       data-i18n-attr='{"placeholder":"webapp_url_placeholder"}'
+       id="execOrTokenInput"
+       placeholder="https://script.google.com/.../exec"
+       spellcheck="false"
+       type="text"/>
+<div class="centerRow">
+<button class="btn primary" disabled="" id="saveBtn" type="button">
+<span aria-hidden="true" class="btnIcon">
+<svg viewBox="0 0 24 24">
+<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+<path d="M17 21v-8H7v8"></path>
+<path d="M7 3v5h8"></path>
+</svg>
+</span>
+<span data-i18n="save_btn">Enregistrer</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<script src="config.js" type="module"></script>
+</body>
+</html>

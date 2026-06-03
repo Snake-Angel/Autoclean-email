@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Editor / tooling
+.claude/
+*.log
+
+# Build artifacts (extension package is published via Releases)
+*.zip

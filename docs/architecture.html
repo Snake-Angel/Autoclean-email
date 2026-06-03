@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autoclean-Email — Architecture globale (v1.0.6)</title>
+  <style>
+    :root {
+      --bg: #e8f1fc;
+      --panel: #ffffff;
+      --border: #d4dde9;
+      --text: #1f2330;
+      --muted: #5b6473;
+      --accent: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(rgba(37, 99, 235, 0.10) 1px, transparent 1px),
+        radial-gradient(rgba(37, 99, 235, 0.06) 1px, transparent 1px);
+      background-size: 28px 28px, 28px 28px;
+      background-position: 0 0, 14px 14px;
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+    }
+    header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    header .meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    header .meta strong { color: var(--accent); font-weight: 600; }
+    main {
+      padding: 24px;
+      overflow-x: auto;
+    }
+    .diagram-wrapper {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 600px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .mermaid { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Autoclean-Email — Architecture globale</h1>
+    <div class="meta">
+      Version <strong>1.0.6</strong> · Documentation technique du <strong>03/06/2026</strong> · Manifest V3
+    </div>
+  </header>
+
+  <main>
+    <div class="diagram-wrapper">
+      <pre class="mermaid">
+flowchart TB
+  %% =====================================================
+  %% AUTOCLEAN-EMAIL — ARCHITECTURE GLOBALE
+  %% =====================================================
+
+  subgraph Chrome_Extension["Chrome Extension (Manifest V3, v1.0.6)"]
+    direction TB
+
+    M["manifest.json<br/>permissions: storage, identity<br/>host_permissions:<br/>• script.google.com/macros/s/*/exec<br/>• oauth2.googleapis.com/*<br/>• gstatic.com/generate_204 (sonde connectivité)<br/>oauth2 scope: userinfo.email"]
+
+    subgraph UI["Surfaces UI"]
+      direction TB
+      PH["popup.html<br/>Header + Settings menu + Footer<br/>Liste, ajout, runCleanup"]
+      CH["config.html<br/>Guide d'installation en 3 étapes<br/>+ aperçu Code.gs + saisie URL Web App"]
+    end
+
+    subgraph LOGIC["Couches logiques"]
+      direction TB
+      PJ["popup.js<br/>Contrôleur UI<br/>i18n, thème, cache local,<br/>appels API directs"]
+
+      CJ["config.js<br/>Charge Code.gs (fetch)<br/>parse URL, sauvegarde config"]
+
+      BJ["background.js<br/>Service Worker MV3<br/>onInstalled → config.html<br/>batchAdd (retry ×3, sleep 75ms)<br/>persistance batchState"]
+
+      API["api.js<br/>apiPost (timeout 120s)<br/>retry 401/403 + revoke token<br/>compteur ac_netfail<br/>isReallyOnline (sonde gstatic, timeout 4s)"]
+
+      AUTH["auth.js<br/>chrome.identity.getAuthToken<br/>silent → interactive<br/>removeCachedAuthToken"]
+
+      SET["settings.js<br/>chrome.storage.sync (autocleanConfig)<br/>isValidWebAppUrl strict"]
+
+      I18N["i18n.js<br/>Dictionnaire FR/EN<br/>applyI18nToDom<br/>chrome.storage.sync.languageChoice"]
+    end
+
+    subgraph STO_CHR["chrome.storage (extension)"]
+      direction TB
+
+      SYNC["chrome.storage.sync<br/>• autocleanConfig: { webAppUrl }<br/>• themeChoice<br/>• languageChoice"]
+
+      LOCAL["chrome.storage.local<br/>• cached_senders_list<br/>• cached_global_settings<br/>• batchState (jobId,total,ok,ko)<br/>• ac_netfail (diagnostic)"]
+    end
+  end
+
+  subgraph GAS["Google Apps Script Web App"]
+    direction TB
+
+    DOPOST["doPost (Code.gs)<br/>safeParseJson_ → verifyOAuthRequest_<br/>→ dispatchAction_(action, data)"]
+
+    subgraph ACTIONS["Actions exposées (allowlist)"]
+      direction TB
+
+      A_LIST["list / add / remove / clearAll"]
+      A_SET["settings / setSettings<br/>setSkipUnread / setSkipSummaryCleanup<br/>setDefaultLabelDays / setLanguage"]
+      A_LBL["labelStatus / createLabel<br/>(présents mais non utilisés par le popup actuel)"]
+      A_RUN["runCleanup → deleteOldEmailsNow_()"]
+    end
+
+    AUTHCK["verifyAccessToken_<br/>UrlFetchApp.fetch oauth2.googleapis.com/tokeninfo<br/>vérifie aud === OAUTH_CLIENT_ID<br/>+ expires_in > 0"]
+
+    PROPS["ScriptProperties (PropertiesService)<br/>• RETENTION_RULES_MAP (JSON)<br/>• DEFAULT_LABEL_DAYS (défaut: 10)<br/>• SKIP_UNREAD (défaut: true)<br/>• SKIP_SUMMARY_CLEANUP (défaut: false)<br/>• TOTAL_DELETED_EMAILS<br/>• LANG (fr|en)<br/>• SUMMARY_RECIPIENT"]
+
+    LOCK["LockService.getScriptLock<br/>tryLock(10s)<br/>protège les écritures et le cleanup"]
+
+    CLEANUP["deleteOldEmailsNow_()<br/>1. cleanupOldSummaries_ (si activé)<br/>2. ingestLabelAdditions_<br/>3. chunks de 18 senders<br/>4. GmailApp.search → dedupe by id<br/>5. cap 200 threads/run<br/>6. label trace + moveToTrash<br/>7. incrementTotalDeleted_<br/>8. MailApp.sendEmail (récap)"]
+
+    SCHED["scheduledCleanup()<br/>trigger horaire / quotidien"]
+
+    SETUP["setup()<br/>lancé manuellement par l'utilisateur<br/>initialise SUMMARY_RECIPIENT + label Add-sender<br/>log l'URL /exec"]
+  end
+
+  subgraph Google["Services Google"]
+    direction TB
+
+    OAUTH["Google OAuth<br/>oauth2.googleapis.com<br/>tokeninfo, accounts.google.com"]
+
+    GSTATIC["gstatic.com/generate_204<br/>Endpoint de connectivité<br/>HTTP 204 vide<br/>(aucune donnée perso envoyée)"]
+
+    GAPI["GmailApp<br/>search / getUserLabelByName / createLabel<br/>label.addToThread / removeFromThread<br/>thread.moveToTrash"]
+
+    MAIL["MailApp<br/>sendEmail (récap HTML)"]
+
+    LABELS["Labels Gmail<br/>• Add-sender (ingestion)<br/>• Suppression-Autoclean (traçage)"]
+
+    INBOX[("Boîte Gmail utilisateur")]
+  end
+
+  %% ==========================
+  %% RELATIONS — Extension
+  %% ==========================
+
+  M --> PH
+  M --> CH
+  M --> BJ
+
+  PH --> PJ
+  CH --> CJ
+
+  PJ --> API
+  PJ --> AUTH
+  PJ --> SET
+  PJ --> I18N
+  PJ --> LOCAL
+  PJ --> SYNC
+
+  CJ --> SET
+  CJ --> I18N
+  CJ --> SYNC
+
+  BJ --> API
+  BJ --> AUTH
+  BJ --> LOCAL
+
+  API --> AUTH
+  API --> SET
+  API --> LOCAL
+
+  %% ==========================
+  %% MESSAGES INTERNES
+  %% ==========================
+
+  PJ -- "chrome.runtime.sendMessage<br/>action: batchAdd<br/>{ emails | entries, days }" --> BJ
+
+  BJ -- "batchAddProgress<br/>{ jobId, total, processed, ok, ko }" --> PJ
+
+  BJ -- "sendResponse<br/>{ done, ok, ko, jobId }" --> PJ
+
+  %% ==========================
+  %% EXTENSION → GAS
+  %% ==========================
+
+  API -- "HTTPS POST<br/>body: { ...payload, token }<br/>timeout 120s<br/>retry 401/403" --> DOPOST
+
+  AUTH -- "getAuthToken<br/>silent puis interactive" --> OAUTH
+
+  %% ==========================
+  %% EXTENSION → GSTATIC (sonde connectivité, chemin d'erreur uniquement)
+  %% ==========================
+
+  API -. "GET /generate_204<br/>timeout 4s<br/>uniquement en cas d'échec API<br/>(aucune donnée perso)" .-> GSTATIC
+
+  %% ==========================
+  %% GAS INTERNE
+  %% ==========================
+
+  DOPOST --> AUTHCK
+
+  AUTHCK -- "tokeninfo?access_token=..." --> OAUTH
+
+  DOPOST --> ACTIONS
+
+  ACTIONS --> PROPS
+  ACTIONS --> CLEANUP
+
+  CLEANUP --> LOCK
+  CLEANUP --> PROPS
+  CLEANUP --> GAPI
+  CLEANUP --> MAIL
+
+  GAPI --> LABELS
+  GAPI --> INBOX
+
+  LABELS --> INBOX
+  MAIL --> INBOX
+
+  SCHED -.-> CLEANUP
+  SETUP -.-> PROPS
+  SETUP -.-> LABELS
+
+  %% ==========================
+  %% GAS → EXTENSION
+  %% ==========================
+
+  DOPOST -- "JSON { status: ok|error, ... }" --> API
+      </pre>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "default",
+      securityLevel: "loose",
+      flowchart: {
+        htmlLabels: true,
+        curve: "basis",
+        useMaxWidth: true,
+      },
+      themeVariables: {
+        fontSize: "13px",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      },
+    });
+  </script>
+</body>
+</html>
