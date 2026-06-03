@@ -731,7 +731,7 @@ const SUMMARY_BODY_MARKER = "AUTOCLEAN_SUMMARY_EMAIL_v1";
 Inline HTML (Gmail-compatible), `@media (prefers-color-scheme: dark)` to adapt to the mail client's theme, structure:
 
 1. **Hidden preheader** (`display:none`, etc.) — shown in Gmail's preview pane: `"{count} emails deleted, about {time_saved} saved!"`.
-2. **Header** with logo (image hosted at `https://mincom3python.github.io/LogoAutoclean/icon48.png?v=1`) + `Autoclean-email` title + `Automatic cleanup completed` subtitle.
+2. **Header** with logo (image hosted at `https://snake-angel.github.io/LogoAutoclean/icon48.png?v=1`) + `Autoclean-email` title + `Automatic cleanup completed` subtitle.
 3. **2 KPI cards**:
    - `Today: {countToday} emails deleted` (green if > 0).
    - `Time saved: {time_saved_today}` (blue if > 0), with mention `≈ 10s / email`.
