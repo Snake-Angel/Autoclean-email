@@ -2,6 +2,11 @@
 
 > **Version 1.0.6** · Chrome Extension (Manifest V3) + Google Apps Script backend.
 
+[![Available in the Chrome Web Store](https://img.shields.io/chrome-web-store/v/jnmgdnpefiajjojodnpfoclkohnckpne?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/autoclean-email/jnmgdnpefiajjojodnpfoclkohnckpne)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+
+**▶️ Install from the Chrome Web Store:** <https://chromewebstore.google.com/detail/autoclean-email/jnmgdnpefiajjojodnpfoclkohnckpne?hl=fr>
+
 Automated Gmail cleanup with **per-sender retention rules** and scheduled runs.
 Emails older than the retention period you set for each sender are moved to Trash —
 either on demand or on a schedule.
@@ -23,6 +28,8 @@ Google** — aucune donnée n'est envoyée à un serveur tiers.
   demande pas de scope Gmail direct (OAuth minimal `userinfo.email`).
 - 🌍 Interface et e-mails récapitulatifs bilingues **FR / EN**.
 - ⏱️ Nettoyage manuel (bouton, limité à 1×/min) ou planifié (déclencheur Apps Script).
+
+**▶️ Installer depuis le Chrome Web Store :** <https://chromewebstore.google.com/detail/autoclean-email/jnmgdnpefiajjojodnpfoclkohnckpne?hl=fr>
 
 ---
 
@@ -59,8 +66,7 @@ Google** — aucune donnée n'est envoyée à un serveur tiers.
 5. *(Optional)* Add a trigger on `scheduledCleanup()` to automate cleanups.
 
 ### 2. Extension — Chrome
-1. Load [`extension/`](extension/) via `chrome://extensions` → **Load unpacked**
-   (or install the packaged build from the Chrome Web Store once published).
+1. Install from the **[Chrome Web Store](https://chromewebstore.google.com/detail/autoclean-email/jnmgdnpefiajjojodnpfoclkohnckpne)**, or load [`extension/`](extension/) via `chrome://extensions` → **Load unpacked** for development.
 2. On first run, paste the Web App URL from step 1.
 3. Add senders + retention days, or label an email **`Add-sender`** in Gmail to add it.
 
@@ -75,3 +81,10 @@ detailed in [`docs/DOCUMENTATION.en.md`](docs/DOCUMENTATION.en.md) /
 No data is sent to any server operated by the developer. Retention rules and settings
 are stored in the user's own Apps Script `PropertiesService`. See
 [`docs/privacy_policy.html`](docs/privacy_policy.html).
+
+---
+
+## 📄 License
+
+This project (Chrome extension + Apps Script backend) is licensed under the
+**GNU General Public License v3.0** — see [`LICENSE`](LICENSE).
