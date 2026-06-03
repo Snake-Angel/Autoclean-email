@@ -720,7 +720,7 @@ function buildSummaryHtml_(threads, lang) {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td width="44" style="width:44px; vertical-align:middle;">
-                    <img src="https://mincom3python.github.io/LogoAutoclean/icon48.png?v=1"
+                    <img src="https://snake-angel.github.io/LogoAutoclean/icon48.png?v=1"
                       width="52" height="52" alt="Autoclean Email"
                       style="display:block; width:52px; height:52px; border-radius:14px;">
                   </td>
