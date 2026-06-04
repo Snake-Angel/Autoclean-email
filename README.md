@@ -33,6 +33,14 @@ Google** — aucune donnée n'est envoyée à un serveur tiers.
 
 ---
 
+## 📸 Screenshots
+
+| Main popup | Dark mode | Settings |
+|:---:|:---:|:---:|
+| ![Main popup (light theme)](docs/screenshots/popup-light.png) | ![Dark mode](docs/screenshots/popup-dark.png) | ![Settings panel](docs/screenshots/popup-settings.png) |
+
+---
+
 ## 📁 Repository structure
 
 ```
