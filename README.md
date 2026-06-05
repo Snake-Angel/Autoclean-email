@@ -1,6 +1,6 @@
 # Autoclean Email
 
-> **Version 1.0.6** · Chrome Extension (Manifest V3) + Google Apps Script backend.
+> **Version 1.0.7** · Chrome Extension (Manifest V3) + Google Apps Script backend.
 
 [![Available in the Chrome Web Store](https://img.shields.io/chrome-web-store/v/jnmgdnpefiajjojodnpfoclkohnckpne?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/autoclean-email/jnmgdnpefiajjojodnpfoclkohnckpne)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)

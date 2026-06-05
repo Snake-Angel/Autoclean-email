@@ -1,7 +1,16 @@
 # Autoclean-email — Documentation technique et fonctionnelle complète
 
-> Documentation française mise à jour pour l’extension Chrome **Autoclean-email** (v1.0.6).
+> Documentation française mise à jour pour l’extension Chrome **Autoclean-email** (v1.0.7).
 > Source de vérité de cette révision : le code complet et à jour de l’extension (`manifest.json`, `popup.html`, `popup.js`, `i18n.js`, `background.js`, `api.js`, `auth.js`, `settings.js`) et du backend (`Code.gs`), ainsi que la politique de confidentialité.
+
+---
+
+## Notes de révision — 2026-06-05
+
+Changements de la version **1.0.7** :
+
+- **Correctif d'empaquetage** : le fichier `Code.gs` est de nouveau **inclus dans le package de l'extension**. Dans la 1.0.6 publiée il avait été omis par erreur, ce qui laissait vide l'aperçu du code de la page de configuration (qui le charge via `chrome.runtime.getURL("Code.gs")`). L'aperçu et le bouton « Copier le code » refonctionnent.
+- Aucun changement de comportement côté nettoyage : toutes les nouveautés de la 1.0.6 (délai anti-spam d'1 min, version affichée sous le titre, restauration de la progression « Traitement en cours… », liens et logo vers `Snake-Angel`) sont conservées.
 
 ---
 
@@ -143,7 +152,7 @@ Structure attendue du manifeste :
 {
   "manifest_version": 3,
   "name": "Autoclean Email",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Automated Gmail cleanup with sender-based retention rules and scheduled runs.",
   "permissions": ["storage", "identity"],
   "host_permissions": [
