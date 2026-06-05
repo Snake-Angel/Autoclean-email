@@ -51,10 +51,9 @@ Google** — aucune donnée n'est envoyée à un serveur tiers.
 │   ├── config.html / config.js      # installation guide + Web App URL entry
 │   ├── background.js                # service worker (CSV import / batch add)
 │   ├── api.js / auth.js / settings.js / i18n.js
+│   ├── Code.gs                      # Google Apps Script backend (bundled so the config page can display it; deploy this to Apps Script)
 │   ├── icons/                       # extension icons
 │   └── assets/                      # install-guide screenshots
-├── backend/
-│   └── Code.gs       # Google Apps Script Web App (deployed by the user)
 └── docs/
     ├── DOCUMENTATION.fr.md          # full technical documentation (FR)
     ├── DOCUMENTATION.en.md          # full technical documentation (EN)
@@ -68,7 +67,7 @@ Google** — aucune donnée n'est envoyée à un serveur tiers.
 
 ### 1. Backend — Google Apps Script
 1. Create a new Apps Script project at <https://script.google.com>.
-2. Paste the content of [`backend/Code.gs`](backend/Code.gs) into `Code.gs`.
+2. Paste the content of [`extension/Code.gs`](extension/Code.gs) into `Code.gs`.
 3. **Deploy → New deployment → Web app**, *Execute as: Me*, *Who has access: Anyone*.
 4. Accept the Google permissions, then copy the deployment URL (ending in `/exec`).
 5. *(Optional)* Add a trigger on `scheduledCleanup()` to automate cleanups.
